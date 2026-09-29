@@ -59,7 +59,6 @@
     .center-hud { display: flex; flex-direction: column; align-items: center; gap: 11px; }
     .vs-badge { font-size: 38px; color: #ffb703; text-shadow: 4px 4px #000; }
     
-    /* Timer and Pause layout side-by-side at center top */
     .center-top-row { display: flex; align-items: center; gap: 15px; }
     .timer-badge { font-size: 26px; color: #e63946; background: rgba(0,0,0,0.6); padding: 8px 15px; border: 2px solid #e63946; border-radius: 8px; }
     .score-badge { font-size: 21px; color: #2a9d8f; margin-top: 4px; }
@@ -111,15 +110,14 @@
     .touch-btn { width: 140px; height: 140px; border-radius: 50%; font-size: 70px; border: 6px solid #8d99ae; background: rgba(20, 20, 35, 0.85); color: white; display: flex; align-items: center; justify-content: center; user-select: none; cursor: pointer; transition: transform 0.05s, border-color 0.1s, box-shadow 0.1s; box-shadow: 0 8px 0 #000, inset 0 0 20px #000; }
     .touch-btn:active { background: rgba(255,255,255,0.3); transform: translateY(8px) scale(0.95); box-shadow: 0 0px 0 #000, inset 0 0 20px #fff; border-color: #fff; }
     
-/* Ultimate button placed strictly at center bottom */
     .mobile-ult-btn { 
       position: absolute; 
-      bottom: 60px; /* ขยับลงมาให้ชิดขอบล่างมากขึ้น */
-      left: 36%; 
-      transform: translateX(-36%); 
-      width: 550px; /* ขยายความกว้างของปุ่มให้ใหญ่ขึ้น */
-      height: 95px; /* ขยายความสูงให้กดง่ายขึ้น */
-      font-size: 26px; /* ขยายขนาดตัวอักษร */
+      bottom: 40px; 
+      left: 50%; 
+      transform: translateX(-50%); 
+      width: 380px; 
+      height: 95px; 
+      font-size: 26px; 
       border-radius: 20px; 
       background: linear-gradient(90deg, #ffb703, #ff0055); 
       border: 6px solid #fff; 
@@ -318,7 +316,7 @@
           <button class="btn-job card-wizard" onclick="chooseJob('wizard')">
             <div class="job-icon">🧙‍♂️</div>
             <div class="job-title" style="color: #4cc9f0;">WIZARD</div>
-            <div class="job-desc"><b>จอมเวททรงพลัง — เลือดน้อย ตีแรง</b><br>❤️ HP 130 &nbsp; ⚔️ DMG 20<br>• ธรรมดา: เวทลูกเล็ก<br>• อัลติ: ลูกไฟยักษ์</div>
+            <div class="job-desc"><b>จอมเวททรงพลัง — เลือดน้อย ตีแรง</b><br>❤️ HP 130 &nbsp; ⚔️️ DMG 20<br>• ธรรมดา: เวทลูกเล็ก<br>• อัลติ: ลูกไฟยักษ์</div>
           </button>
           <button class="btn-job card-archer" onclick="chooseJob('archer')">
             <div class="job-icon">🏹</div>
@@ -335,6 +333,9 @@
       <div style="display: flex; gap: 20px; margin-top: 10px;">
         <button id="bgmBtn" class="icon-btn" onclick="toggleAudio('bgm')" style="font-size: 20px; padding: 18px 30px;">🎵 BGM: ON</button>
         <button id="sfxBtn" class="icon-btn" onclick="toggleAudio('sfx')" style="font-size: 20px; padding: 18px 30px;">🔊 SFX: ON</button>
+      </div>
+      <div style="display: flex; justify-content: center; width: 100%; margin-top: 5px;">
+        <button id="fsBtn" class="icon-btn" onclick="toggleFullscreen()" style="font-size: 20px; padding: 18px 30px; width: 440px;">🗖 FULLSCREEN</button>
       </div>
       <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
         <button class="btn-start" onclick="togglePause()">▶️ RESUME (ESC)</button>
@@ -503,6 +504,20 @@
         isSfxMuted = !isSfxMuted;
         document.getElementById('sfxBtn').innerText = isSfxMuted ? '🔊 SFX: OFF' : '🔊 SFX: ON';
         document.getElementById('sfxBtn').classList.toggle('off', isSfxMuted);
+      }
+    }
+    
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.log(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+        document.getElementById('fsBtn').innerText = '🗖 EXIT FULLSCREEN';
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+          document.getElementById('fsBtn').innerText = '🗖 FULLSCREEN';
+        }
       }
     }
 
@@ -847,7 +862,7 @@
     function spawnNote() {
       if (gameState !== 'PLAYING') return;
       const dir = Math.floor(Math.random() * 4);
-      const symbols = ['⬅️', '⬇️', '⬆️', '➡️'];
+      const symbols = ['⬅️', '⬇️', '⬆️', '➡️️'];
       const colors = ['#b757db', '#00ffff', '#12fa05', '#f9393f'];
       const offsets = [0, 110, 220, 330];
 
@@ -1294,5 +1309,3 @@
   </script>
 </body>
 </html>
-
-
