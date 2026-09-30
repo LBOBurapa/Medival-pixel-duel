@@ -371,6 +371,24 @@
 
     const menuBgCanvas = document.getElementById('menu-particles-bg');
     const menuBgCtx = menuBgCanvas.getContext('2d');
+    /* จำกัดความเร็วเกมให้เท่ากันทุกจอ (60 step/วินาที) ไม่ว่าจอจะ 60/90/120/144Hz */
+    const FRAME_MS = 1000 / 60;
+    function makeFrameLimiter() {
+      let last = null, acc = 0;
+      return function (ts) {
+        if (last === null) { last = ts; acc = FRAME_MS; }
+        let dt = ts - last; last = ts;
+        if (dt > 100) dt = FRAME_MS;            // กลับมาจากแท็บอื่น/ค้าง ไม่ให้เร่งไล่
+        acc += dt;
+        if (acc < FRAME_MS - 1) return false;   // ยังไม่ถึงเวลา ข้ามเฟรมนี้
+        acc -= FRAME_MS;
+        if (acc > FRAME_MS) acc = 0;
+        return true;
+      };
+    }
+    const menuFrameOk = makeFrameLimiter();
+    const gameFrameOk = makeFrameLimiter();
+
     let menuEmbers = [];
 
     function initMenuEmbers() {
@@ -383,7 +401,8 @@
         });
       }
     }
-    function renderMenuEmbers() {
+    function renderMenuEmbers(ts) {
+      if (!menuFrameOk(ts)) { requestAnimationFrame(renderMenuEmbers); return; }
       menuBgCtx.clearRect(0, 0, menuBgCanvas.width, menuBgCanvas.height);
       menuEmbers.forEach(e => {
         e.y -= e.speedY; e.x += e.speedX;
@@ -394,7 +413,7 @@
       });
       requestAnimationFrame(renderMenuEmbers);
     }
-    initMenuEmbers(); renderMenuEmbers();
+    initMenuEmbers(); requestAnimationFrame(renderMenuEmbers);
 
     /* =========================================================
        GAME STATE & CONFIG
@@ -418,10 +437,10 @@
     const WAVE_HEAL_RATIO = 0.30;
     
     const WAVE_CONFIG = [
-      { time: 10, mistakes: 2, minLen: 6, maxLen: 6, noteSpeed: 6, spawnRate: 800 },
-      { time: 9,  mistakes: 2, minLen: 6, maxLen: 7, noteSpeed: 8, spawnRate: 650 },
-      { time: 8,  mistakes: 2, minLen: 7, maxLen: 8, noteSpeed: 10, spawnRate: 550 },
-      { time: 7,  mistakes: 1, minLen: 7, maxLen: 9, noteSpeed: 12, spawnRate: 450 }
+      { time: 10, mistakes: 2, minLen: 6, maxLen: 6, noteSpeed: 4, spawnRate: 1200 },
+      { time: 9,  mistakes: 2, minLen: 6, maxLen: 7, noteSpeed: 5.5, spawnRate: 945 },
+      { time: 8,  mistakes: 2, minLen: 7, maxLen: 8, noteSpeed: 7, spawnRate: 786 },
+      { time: 7,  mistakes: 1, minLen: 7, maxLen: 9, noteSpeed: 8.5, spawnRate: 635 }
     ];
 
     const JOB_STATS = {
@@ -862,7 +881,7 @@
     function spawnNote() {
       if (gameState !== 'PLAYING') return;
       const dir = Math.floor(Math.random() * 4);
-      const symbols = ['⬅️', '⬇️', '⬆️', '➡️️'];
+      const symbols = ['⬅️', '⬇️', '⬆️', '➡️'];
       const colors = ['#b757db', '#00ffff', '#12fa05', '#f9393f'];
       const offsets = [0, 110, 220, 330];
 
@@ -1275,7 +1294,8 @@
     /* =========================================================
        MAIN LOOP
        ========================================================= */
-    function gameLoop() {
+    function gameLoop(ts) {
+      if (!gameFrameOk(ts)) { requestAnimationFrame(gameLoop); return; }
       if (gameState !== 'PAUSED') {
         if (hitStopFrames > 0) hitStopFrames--; else gameTime += 16;
       }
@@ -1285,7 +1305,9 @@
         const cfg = WAVE_CONFIG[Math.min(currentWave, WAVE_CONFIG.length - 1)];
         if (gameTime - noteSpawnTimer > cfg.spawnRate) { spawnNote(); noteSpawnTimer = gameTime; }
         for (let i = mobileNotes.length - 1; i >= 0; i--) {
+          if (gameState !== 'PLAYING') break;
           let note = mobileNotes[i];
+          if (!note) continue;
           note.y += cfg.noteSpeed;
           if (note.el) note.el.style.top = note.y + 'px';
           if (note.y > 880) { if (note.el) note.el.remove(); mobileNotes.splice(i, 1); triggerMobileMiss(); }
@@ -1309,3 +1331,5 @@
   </script>
 </body>
 </html>
+
+
